@@ -36,6 +36,12 @@
 	$download = ($allowOverride && isset($_GET["download"])) ? $_GET["download"] : $download;
 	
 	/*
+	 * Whether the install should run, false stops the install from running even if the software is downloaded.
+	 */
+	$runInstall = true; // true/false; default = true
+	$runInstall = ($allowOverride && isset($_GET["runInstall"])) ? $_GET["runInstall"] : $runInstall;
+	
+	/*
 	 * The method that will be attempted if the software is to be downloaded
 	 * Depends on $download to be true, if $download is false the setting is ignored.
 	 * Currently the only options are automatic, which selects the best method supported,
@@ -61,15 +67,24 @@
 	 * Checks if the install directory exists,
 	 * if so it redirects the user into that directory.
 	 */
-	if(is_dir("install") && !$automaticInstall) {
+	if(is_dir("install") && !$automaticInstall && $runInstall) {
 		header("Location: install/");
 		exit;
 	}
-	if(is_dir("install") && $automaticInstall) {
+	if(is_dir("install") && $automaticInstall && $runInstall) {
 		require("install/automaticInstall.php");
 		exit;
 	}
 	
+	if(!$download) {
+		if($runInstall) {
+			die("Software not downloaded, but the installer is not allowed to download the other files.");
+		}
+		else {
+			die("Software is downloaded, but the install was not allowed to run.");
+		}
+	}
+	
 	// TODO: add download code
 	
-?>
+	
